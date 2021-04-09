@@ -454,10 +454,10 @@ if STAGE == 1:
     time_expected = (time.process_time() - time_start)
     data["DataObject"]["Expected_time"] = time_expected
 
-    with open('path.geojson', 'w') as outfile:
+    with open('Coverage_path.geojson', 'w') as outfile:
         json.dump(data, outfile)
 
-    print("Mission saved at ~PROJECT_PATH/path.geojson\n")
+    print("Mission saved at ~PROJECT_PATH/Coverage_path.geojson\n")
 
 
 elif STAGE == 2:
