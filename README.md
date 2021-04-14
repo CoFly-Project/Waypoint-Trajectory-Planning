@@ -15,7 +15,19 @@ Example of Inspection:
 
 ## Dependencies
 
-Install all the neccecary dependencies using pip3 install <*package name*<package name>>
+Install all the neccecary dependencies using ```pip3 install <package name>```
+
+#### Required packages:
+  * pyproj
+  * shapely
+  * numpy
+  * geopy
+  * math
+  * requests 
+  * json
+  * time
+  * sys
+  * xml.etree.ElementTree 
   
 ## General use
 - For **Coverage task**:
@@ -35,7 +47,7 @@ Install all the neccecary dependencies using pip3 install <*package name*<packag
 > Note: Waypoints for coverage and inspection tasks are saved at Coverage_path.geojson and Hotpoint_path.geojson while .gpx format for Geoplaner is also supported.
 
 
-## Run
+## How to Run
 
 1. Clone this repo
 2. Open terminal on ~PROJECT_PATH
