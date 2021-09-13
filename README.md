@@ -31,10 +31,10 @@ Install all the neccecary dependencies using ```pip3 install <package name>```
   
 ## General use
 - For **Coverage task**:
-> ~PROJECT_PATH/GeoCordinates polygon_area obstacle_area flight_direction scanning_distance mission_type speed
+> ~PROJECT_PATH/GeoCordinatesGUI polygon_area obstacle_area flight_direction scanning_distance mission_type speed
 
 - For **Inspection task**:
-> ~PROJECT_PATH/GeoCordinates points_of_interest obstacle_area flight_direction scanning_distance mission_type speed
+> ~PROJECT_PATH/GeoCordinatesGUI points_of_interest obstacle_area flight_direction scanning_distance mission_type speed
 
 ## Details
 - Polygon, obstacle areas and points of interest must follow the original type of .geojson
@@ -52,8 +52,8 @@ Install all the neccecary dependencies using ```pip3 install <package name>```
 1. Clone this repo
 2. Open terminal on ~PROJECT_PATH
 3. Run 
-    -  For coverage e.g. GeoCordinates map_data.geojson disabled_paths.geojson 0 40 1 3 
-    -  For inspection e.g. GeoCordinates hotspot_data.geojson disabled_paths.geojson 0 5 2 3 
+    -  For coverage e.g. GeoCordinatesGUI map_data.geojson disabled_paths.geojson 0 40 1 3 
+    -  For inspection e.g. GeoCordinatesGUI hotspot_data.geojson disabled_paths.geojson 0 5 2 3 
 
 > Note: Visualization of the results can be shown through CoFly GUI at http://localhost:8081/calculated_path
 
