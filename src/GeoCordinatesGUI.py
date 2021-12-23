@@ -10,6 +10,7 @@ from requests.exceptions import HTTPError
 import time
 import sys
 import warnings
+import json
 
 # Start processing time
 time_start = time.process_time()
@@ -25,6 +26,26 @@ STAGE = int(sys.argv[5])  # Choose your STAGE: STAGE = 1 For Coverage_Task / STA
 
 if STAGE == 1:
 
+	# polygon
+	with open(sys.argv[1]) as json_data:
+		try:
+			mapdatafromIKH = json.load(json_data)
+		except ValueError:
+			mapdatafromIKH = None
+
+	with open('map_data.geojson', 'w') as outfile:
+		json.dump(mapdatafromIKH, outfile)
+
+	# obstacles
+	with open(sys.argv[2]) as json_data:
+		try:
+			obstacledatafromIKH = json.load(json_data)
+		except ValueError:
+			obstacledatafromIKH = None
+
+	with open('disabled_paths.geojson', 'w') as outfile:
+		json.dump(obstacledatafromIKH, outfile)
+
 	flight_direction = int(sys.argv[3])  # rotation
 	stepsize = int(sys.argv[4])  # Scanning Distance ( in meters)
 	speed = int(sys.argv[6])
@@ -33,6 +54,16 @@ if STAGE == 1:
 
 
 elif STAGE == 2:
+
+	# polygon
+	with open(sys.argv[1]) as json_data:
+		try:
+			hotpoint_datafromIKH = json.load(json_data)
+		except ValueError:
+			hotpoint_datafromIKH = None
+
+	with open('hotpoint_data.geojson', 'w') as outfile:
+		json.dump(hotpoint_datafromIKH, outfile)
 
 	data = Inspection_Task(time_start=time_start).TSP()
 

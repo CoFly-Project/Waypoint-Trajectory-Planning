@@ -17,7 +17,7 @@ import numpy as np
 import math
 import json
 import time
-import sys
+
 
 """
 		# ------------------------------------------- **STAGE 1** ------------------------------------------------------
@@ -41,25 +41,6 @@ class Coverage_Task:
 		# Projections
 		p_ll = pyproj.Proj(init='epsg:4326')  # epsg code for Coordinate reference system  WGS84
 		p_mt = pyproj.Proj(init='epsg:3857')  # Web-Mercator Projection for WGS84
-
-		# get argument list using sys module
-		with open(sys.argv[1]) as json_data:
-			try:
-				mapdatafromIKH = json.load(json_data)
-			except ValueError:
-				mapdatafromIKH = None
-
-		with open('map_data.geojson', 'w') as outfile:
-			json.dump(mapdatafromIKH, outfile)
-
-		with open(sys.argv[2]) as json_data:
-			try:
-				obstacledatafromIKH = json.load(json_data)
-			except ValueError:
-				obstacledatafromIKH = None
-
-		with open('disabled_paths.geojson', 'w') as outfile:
-			json.dump(obstacledatafromIKH, outfile)
 
 
 		# READ data

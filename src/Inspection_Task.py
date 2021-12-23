@@ -26,20 +26,12 @@ class Inspection_Task:
 	def TSP(self):
 		pointsfor2visit = []  # points that we have to re-visit
 
-		with open('map_data2.geojson') as json_data:
-			try:
-				hot_spots = json.load(json_data)
-			except ValueError:
-				hot_spots = None
-
-		with open('hotspots_data.geojson', 'w') as outfile:
-			json.dump(hot_spots, outfile)
-
 		with open('hotspots_data.geojson') as json_file:
 			data = json.load(json_file)
 		for p in data['features']:
+			initial_drone_position = [p['InitialPosition'][1], p['InitialPosition'][0]]
 			for i in range(len(p['geometry']['coordinates'][0])):
-				pointsfor2visit.append([p['geometry']['coordinates'][0][i][0], p['geometry']['coordinates'][0][i][1]])
+				pointsfor2visit.append([p['geometry']['coordinates'][0][i][1], p['geometry']['coordinates'][0][i][0]])
 
 		radius = 5  # Radius ( in meters)
 
@@ -62,9 +54,11 @@ class Inspection_Task:
 		# 										Circular Flight for each point of interest
 		# --------------------------------------------------------------------------------------------------------------
 
-		numberof2points = 0
-
 		hotpoint = []
+		numberof2points = 0
+		hotpoint.append((initial_drone_position[0], initial_drone_position[1]))  # Add it for path
+		del route[0]  # Do not consider TakeOff/landing point as hotpoint (delete it from list)
+
 		for i in route:
 
 			hotpoint.append((pointsfor2visit[i][0], pointsfor2visit[i][1]))
@@ -90,12 +84,12 @@ class Inspection_Task:
 				elif j == 8:
 					bearing = 360
 
-			result = distance.destination(start, bearing)  # no radians here
+				result = distance.destination(start, bearing)  # no radians here
 
-			hotpoint.append((result.latitude, result.longitude))
+				hotpoint.append((result.latitude, result.longitude))
 
-		# Return to Home Location
-		hotpoint.append((pointsfor2visit[route[0]][0], pointsfor2visit[route[0]][1]))
+		# Return to Home Location (TakeOff/landing point)
+		hotpoint.append((initial_drone_position[0], initial_drone_position[1]))
 
 		# Calculate distance between Hot-Points (final route)
 		distanceTSPhot = 0
