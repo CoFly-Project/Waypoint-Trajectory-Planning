@@ -7,11 +7,14 @@ from ortools.constraint_solver import pywrapcp
 
 
 class Site_Specific_mission(object):
-	def __init__(self, distanceTSP):
+	def __init__(self, distanceTSP, pointsfor2visit, initial_drone_position):
 		self.distanceTSP = distanceTSP
+		self.pointsfor2visit = pointsfor2visit
+		self.initial_drone_position = initial_drone_position
+		self.No_initial_drone_position = [i for i in range(len(self.pointsfor2visit)) if self.pointsfor2visit[i] == self.initial_drone_position]
 
 	def create_data_model(self):
-		data = {'distance_matrix': self.distanceTSP, 'takeoff/landing': 0}
+		data = {'distance_matrix': self.distanceTSP, 'takeoff/landing': self.No_initial_drone_position[0]}
 		return data
 
 	def print_solution(self, manager, routing, solution):
