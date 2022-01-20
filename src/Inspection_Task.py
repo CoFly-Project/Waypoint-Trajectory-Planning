@@ -26,10 +26,11 @@ class Inspection_Task:
 	def TSP(self):
 		pointsfor2visit = []  # points that we have to re-visit
 
-		with open('hotspots_data.geojson') as json_file:
+		with open('hotpoint_data.geojson') as json_file:
 			data = json.load(json_file)
 		for p in data['features']:
 			initial_drone_position = [p['InitialPosition'][1], p['InitialPosition'][0]]
+			pointsfor2visit.append([p['InitialPosition'][1], p['InitialPosition'][0]])
 			for i in range(len(p['geometry']['coordinates'][0])):
 				pointsfor2visit.append([p['geometry']['coordinates'][0][i][1], p['geometry']['coordinates'][0][i][0]])
 
@@ -48,7 +49,7 @@ class Inspection_Task:
 					dist_list.append((i, j, distanceTSP[i][j]))
 
 		# TRAVEL SALESMAN PROBLEM
-		data, route = Site_Specific_mission(distanceTSP).main()
+		data, route = Site_Specific_mission(distanceTSP, pointsfor2visit, initial_drone_position).main()
 
 		# --------------------------------------------------------------------------------------------------------------
 		# 										Circular Flight for each point of interest
