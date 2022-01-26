@@ -12,9 +12,9 @@ import sys
 
 # Handle errors during the path planning procedure - Return them to GUI in order to be properly displayed by iknowhow
 class Handle_errors:
-	def __init__(self, numberofmegacells, Obstacle, waypointsformission, pathpoints, time, speed):
+	def __init__(self, numberofmegacells, numberofobstacles, waypointsformission, pathpoints, time, speed):
 		self.numberofmegacells = numberofmegacells
-		self.Obstacle = Obstacle
+		self.numberofobstacles = numberofobstacles
 		self.waypointsformission = waypointsformission
 		self.pathpoints = pathpoints
 		self.time = time
@@ -39,7 +39,7 @@ class Handle_errors:
 			sys.exit(0)
 
 	def error_3(self):
-		if self.numberofmegacells - len(self.Obstacle) <= 3:
+		if self.numberofmegacells - self.numberofobstacles <= 3:
 			data = {"Cannot find path because the area is very small - Minimize Scanning Distance and try again"}
 			# Sending POST data to IKH with requests
 			headers = {'Content-Type': 'application/json', }
@@ -65,8 +65,8 @@ class Handle_errors:
 				(self.pathpoints[self.waypointsformission[i]][1], self.pathpoints[self.waypointsformission[i]][0]),
 				(self.pathpoints[self.waypointsformission[i + 1]][1], self.pathpoints[self.waypointsformission[i + 1]][0])).meters
 
-		if Calculate_Travel(dist=Distance_for_path, time=self.time, speed=self.speed).cal_time() > 20:
-			data = {"Cannot execute mission due to time limitation (20 minutes)"}
+		if Calculate_Travel(dist=Distance_for_path, time=self.time, speed=self.speed).cal_time() > 25:
+			data = {"Cannot execute mission due to time limitation (25 minutes)"}
 			# Sending POST data to IKH with requests
 			headers = {'Content-Type': 'application/json', }
 			for url in ['http://127.0.0.1:8081/calculation_path_error?error_code=4']:  # HERE PUT THE URL FOR IKH

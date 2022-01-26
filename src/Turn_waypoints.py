@@ -5,6 +5,7 @@
 from Helpers import calculate_initial_compass_bearing
 
 import numpy as np
+from pyproj import _datadir, datadir
 import pyproj
 
 

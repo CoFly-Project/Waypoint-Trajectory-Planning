@@ -12,6 +12,7 @@ import sys
 import warnings
 import json
 
+
 # Start processing time
 time_start = time.process_time()
 
@@ -65,7 +66,9 @@ elif STAGE == 2:
 	with open('hotpoint_data.geojson', 'w') as outfile:
 		json.dump(hotpoint_datafromIKH, outfile)
 
-	data = Inspection_Task(time_start=time_start).TSP()
+	radius = int(sys.argv[4]) # Radius ( in meters)
+
+	data = Inspection_Task(time_start=time_start, radius = radius).TSP()
 
 
 # Sending POST data to GUI with requests

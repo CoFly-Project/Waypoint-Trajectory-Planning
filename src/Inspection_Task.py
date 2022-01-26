@@ -19,8 +19,9 @@ import time
 
 class Inspection_Task:
 
-	def __init__(self, time_start):
+	def __init__(self, time_start, radius):
 		self.time_start = time_start
+		self.radius = radius
 
 
 	def TSP(self):
@@ -34,7 +35,6 @@ class Inspection_Task:
 			for i in range(len(p['geometry']['coordinates'][0])):
 				pointsfor2visit.append([p['geometry']['coordinates'][0][i][1], p['geometry']['coordinates'][0][i][0]])
 
-		radius = 5  # Radius ( in meters)
 
 		"""Create the distance matrix"""
 		distanceTSP = [[0 for column in range(len(pointsfor2visit))] \
@@ -63,7 +63,7 @@ class Inspection_Task:
 		for i in route:
 
 			hotpoint.append((pointsfor2visit[i][0], pointsfor2visit[i][1]))
-			distance = geopy.distance.distance(meters=radius)  # Define the radius of the circle
+			distance = geopy.distance.distance(meters=self.radius)  # Define the radius of the circle
 			start = gp.Point(pointsfor2visit[i][0], pointsfor2visit[i][1])
 			for j in range(9):
 				if j == 0:

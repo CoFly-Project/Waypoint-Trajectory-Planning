@@ -56,24 +56,31 @@ class Coverage_Task:
 					pointList.append(point)
 		# polygonlength = (len(p['geometry']['coordinates'][0]))  # calculate the length of the boundaries
 
-		Obstacle = []  # Obstacle List - Initialize the points that contain an obstacle
+
 		with open('disabled_paths.geojson') as json_file:
 			try:
 				data = json.load(json_file)
+				Obstacle = [[] for _ in range(len(data['features']))]   # Obstacle List - Initialize the points that contain an obstacle
+				iterate_obstacles = 0
 				for p in data['features']:
 					for i in range(len(p['geometry']['coordinates'][0])):
 						point = 0
 						point = (
 							shapely.geometry.Point(
 								(p['geometry']['coordinates'][0][i][1], p['geometry']['coordinates'][0][i][0])))
-						Obstacle.append(point)
+						Obstacle[iterate_obstacles].append(point)
+					iterate_obstacles += 1
 			except TypeError:
 				pass
+
 
 		# set up the polygon-area
 		polygon = Polygon([[p.x, p.y] for p in pointList])  # p.x is lat
 
-		polygonObst = Polygon([[p.x, p.y] for p in Obstacle])
+		polygonObst = [[] for _ in range(len(Obstacle))]
+
+		for i in range(len(Obstacle)):
+			polygonObst[i].append(Polygon([[p.x, p.y] for p in Obstacle[i]]))
 
 		# Create corners of rectangle to be transformed to a grid
 		minlonnw = min(p.y for p in pointList)
@@ -101,23 +108,6 @@ class Coverage_Task:
 				y += self.stepsize  # * sqrt(2)
 			x += self.stepsize
 
-		numberofpoints = 0  # number of points in poly
-
-		for p in gridpoints:
-			p_transform = shapely.geometry.Point(pyproj.transform(p_mt, p_ll, p[0], p[1]))
-			point = shapely.geometry.Point(p_transform.x, p_transform.y)  # from all points in rectagular area
-			if polygon.contains(point) and not polygonObst.contains(
-					point):  # choose those which intersect with that polygon
-				numberofpoints = numberofpoints + 1
-				Geoplaner.append(p)  # list for megacells in EPSG:3857
-
-		i = 0
-		messy_x = np.zeros((numberofpoints, 2))
-		for p in Geoplaner:
-			messy_x[i][0] = p[0]
-			messy_x[i][1] = p[1]
-			i += 1
-
 		# --------------------------------
 
 		# When in flight direction mode
@@ -128,18 +118,33 @@ class Coverage_Task:
 
 			# Find the centroid of the polygon
 			center = polygon.centroid
-			# center = centroid(messy_x)
 			center_transformed = pyproj.transform(p_ll, p_mt, center.x, center.y)  # Transform center point to 3857
 
 			# Rotate Poly
 			rotatepoly = []
-			for i in range(len(messy_x)):
-				rotatepoly.append(rotate_point((messy_x[i][0], messy_x[i][1]), self.flight_direction,
+			for p in gridpoints:
+				rotatepoly.append(rotate_point((p[0], p[1]), self.flight_direction,
 											   (center_transformed[0], center_transformed[1])))
-
+			gridpoints.clear()
 			for i in range(len(rotatepoly)):
-				messy_x[i][0] = rotatepoly[i][0]
-				messy_x[i][1] = rotatepoly[i][1]
+				gridpoints.append((rotatepoly[i][0], rotatepoly[i][1]))
+
+
+		numberofpoints = 0  # number of points in poly
+		for p in gridpoints:
+			p_transform = shapely.geometry.Point(pyproj.transform(p_mt, p_ll, p[0], p[1]))
+			point = shapely.geometry.Point(p_transform.x, p_transform.y)  # from all points in rectagular area
+			if polygon.contains(point) and not any([polygonObst[i][0].contains(point) for i in range(len(polygonObst))]):  # choose those which intersect with Polygon and avoid Obstacles
+				numberofpoints = numberofpoints + 1
+				Geoplaner.append(p)  # list for megacells in EPSG:3857
+
+		i = 0
+		messy_x = np.zeros((numberofpoints, 2))
+		for p in Geoplaner:
+			messy_x[i][0] = p[0]
+			messy_x[i][1] = p[1]
+			i += 1
+
 
 		"""
 		---------------------------------------
@@ -187,11 +192,15 @@ class Coverage_Task:
 			megacells[count][1] = messy_x[i][1]
 			count = count + 1
 
-		print("The number of mega cells are %d" % (numberofmegacells - len(Obstacle)))
-		print("The number of mega cells that contain obstacles are %d\n" % len(Obstacle))
+		numberofobstacles = 0
+		for i in range(len(Obstacle)):
+			numberofobstacles += len(Obstacle[i])
+		print("The number of mega cells are %d" % (numberofmegacells - numberofobstacles))
+		print("The number of mega cells that contain obstacles are %d\n" % numberofobstacles)
+
 
 		# Handle possible error
-		Handle_errors(numberofmegacells=numberofmegacells, Obstacle=Obstacle, waypointsformission=None, pathpoints=None,
+		Handle_errors(numberofmegacells=numberofmegacells, numberofobstacles=numberofobstacles, waypointsformission=None, pathpoints=None,
 					  time=None, speed=None).error_3()
 
 
@@ -274,7 +283,7 @@ class Coverage_Task:
 		print("Waypoints for coverage mission: %s\n" % waypointsformission)  # mission ends at the starting point
 
 		# Handle possible error
-		Handle_errors(numberofmegacells=None, Obstacle=None, waypointsformission=waypointsformission,
+		Handle_errors(numberofmegacells=None, numberofobstacles=None, waypointsformission=waypointsformission,
 					  pathpoints=pathpoints,
 					  time=time, speed=self.speed).error_4()
 
