@@ -18,7 +18,6 @@ import math
 import json
 import time
 
-
 """
 		# ------------------------------------------- **STAGE 1** ------------------------------------------------------
 """
@@ -42,7 +41,6 @@ class Coverage_Task:
 		p_ll = pyproj.Proj(init='epsg:4326')  # epsg code for Coordinate reference system  WGS84
 		p_mt = pyproj.Proj(init='epsg:3857')  # Web-Mercator Projection for WGS84
 
-
 		# READ data
 		pointList = []  # pointList - Initialize the points inside an area of interest
 		with open('map_data.geojson') as json_file:
@@ -56,11 +54,11 @@ class Coverage_Task:
 					pointList.append(point)
 		# polygonlength = (len(p['geometry']['coordinates'][0]))  # calculate the length of the boundaries
 
-
 		with open('disabled_paths.geojson') as json_file:
 			try:
 				data = json.load(json_file)
-				Obstacle = [[] for _ in range(len(data['features']))]   # Obstacle List - Initialize the points that contain an obstacle
+				Obstacle = [[] for _ in range(
+					len(data['features']))]  # Obstacle List - Initialize the points that contain an obstacle
 				iterate_obstacles = 0
 				for p in data['features']:
 					for i in range(len(p['geometry']['coordinates'][0])):
@@ -73,14 +71,17 @@ class Coverage_Task:
 			except TypeError:
 				pass
 
-
 		# set up the polygon-area
 		polygon = Polygon([[p.x, p.y] for p in pointList])  # p.x is lat
 
-		polygonObst = [[] for _ in range(len(Obstacle))]
+		try:
+			polygonObst = [[] for _ in range(len(Obstacle))]
 
-		for i in range(len(Obstacle)):
-			polygonObst[i].append(Polygon([[p.x, p.y] for p in Obstacle[i]]))
+			for i in range(len(Obstacle)):
+				polygonObst[i].append(Polygon([[p.x, p.y] for p in Obstacle[i]]))
+		except:
+			pass
+
 
 		# Create corners of rectangle to be transformed to a grid
 		minlonnw = min(p.y for p in pointList)
@@ -129,14 +130,24 @@ class Coverage_Task:
 			for i in range(len(rotatepoly)):
 				gridpoints.append((rotatepoly[i][0], rotatepoly[i][1]))
 
-
+		numberofobstacles = 0
 		numberofpoints = 0  # number of points in poly
 		for p in gridpoints:
 			p_transform = shapely.geometry.Point(pyproj.transform(p_mt, p_ll, p[0], p[1]))
 			point = shapely.geometry.Point(p_transform.x, p_transform.y)  # from all points in rectagular area
-			if polygon.contains(point) and not any([polygonObst[i][0].contains(point) for i in range(len(polygonObst))]):  # choose those which intersect with Polygon and avoid Obstacles
-				numberofpoints = numberofpoints + 1
-				Geoplaner.append(p)  # list for megacells in EPSG:3857
+			try:  # if obstacles
+				if polygon.contains(point) and any([polygonObst[i][0].contains(point) for i in range(
+						len(polygonObst))]):  # count megacells that are inside obstacles
+					numberofobstacles += 1
+				else:
+					if polygon.contains(point):
+						numberofpoints = numberofpoints + 1
+						Geoplaner.append(p)  # list for megacells in EPSG:3857
+
+			except:  # without obstacles
+				if polygon.contains(point):
+					numberofpoints = numberofpoints + 1
+					Geoplaner.append(p)  # list for megacells in EPSG:3857
 
 		i = 0
 		messy_x = np.zeros((numberofpoints, 2))
@@ -145,12 +156,11 @@ class Coverage_Task:
 			messy_x[i][1] = p[1]
 			i += 1
 
-
 		"""
 		---------------------------------------
 		Paths strictly in ROI = TRUE by default
 		---------------------------------------
-		Test if all(4) subcells are inside poly and finalize megacells. STRICT RULE !!! 
+		Test if all(4) subcells are inside poly - outside obstacles and finalize megacells. STRICT RULE !!! 
 		"""
 		megacellsinpolygon = []
 		messy_numberofwaypoints = 0
@@ -178,8 +188,15 @@ class Coverage_Task:
 				messy_numberofwaypoints += 1
 				messy_subcells_transformed = pyproj.transform(p_mt, p_ll, result_x, result_y)
 				point = shapely.geometry.Point(messy_subcells_transformed[0], messy_subcells_transformed[1])
-				if polygon.contains(point):
-					countsubcells += 1
+				"""CHECK if any subcell is inside obstacles - if yes remove the whole megacell"""
+				try:
+					if polygon.contains(point) and not any([polygonObst[obs][0].contains(point) for obs in range(
+						len(polygonObst))]):
+						countsubcells += 1
+				except:
+					if polygon.contains(point):
+						countsubcells += 1
+
 			if countsubcells == 4:
 				megacellsinpolygon.append(i)
 				numberofmegacells += 1
@@ -192,18 +209,14 @@ class Coverage_Task:
 			megacells[count][1] = messy_x[i][1]
 			count = count + 1
 
-		numberofobstacles = 0
-		for i in range(len(Obstacle)):
-			numberofobstacles += len(Obstacle[i])
-		print("The number of mega cells are %d" % (numberofmegacells - numberofobstacles))
+
+		print("The number of mega cells are %d" % numberofmegacells)
 		print("The number of mega cells that contain obstacles are %d\n" % numberofobstacles)
 
-
 		# Handle possible error
-		Handle_errors(numberofmegacells=numberofmegacells, numberofobstacles=numberofobstacles, waypointsformission=None, pathpoints=None,
+		Handle_errors(numberofmegacells=numberofmegacells, numberofobstacles=numberofobstacles,
+					  waypointsformission=None, pathpoints=None,
 					  time=None, speed=None).error_3()
-
-
 
 		"""
 		 --------------------------------
@@ -253,6 +266,7 @@ class Coverage_Task:
 				result_x = megacells[i][0] + distance * math.cos(bearing_radians)
 				result_y = megacells[i][1] + distance * math.sin(bearing_radians)
 
+
 				subcells[numberofwaypoints][0] = result_x
 				subcells[numberofwaypoints][1] = result_y
 
@@ -265,7 +279,6 @@ class Coverage_Task:
 		rte = ET.SubElement(root, "rte")
 
 		ET.SubElement(rte, "name").text = "Route1"
-
 
 		"""
 		# Call Pattern.py
