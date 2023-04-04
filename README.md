@@ -57,6 +57,18 @@ Install all the neccecary dependencies using ```pip3 install <package name>```
 
 > Note: Visualization of the results can be shown through CoFly GUI at http://localhost:8081/calculated_path
 
-## References
+## Cite as:
 
-(Not published yet)
+```
+@article{raptis2023end,
+  title={End-to-end Precision Agriculture UAV-Based Functionalities Tailored to Field Characteristics},
+  author={Raptis, Emmanuel K and Krestenitis, Marios and Egglezos, Konstantinos and Kypris, Orfeas and Ioannidis, Konstantinos and Doitsidis, Lefteris and Kapoutsis, Athanasios Ch and Vrochidis, Stefanos and Kompatsiaris, Ioannis and Kosmatopoulos, Elias B},
+  journal={Journal of Intelligent \& Robotic Systems},
+  volume={107},
+  number={2},
+  pages={23},
+  year={2023},
+  publisher={Springer}
+}
+```
+
